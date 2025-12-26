@@ -23,4 +23,13 @@ Route::middleware(['ceklogin'])->group(function () {
     
     // 4. Halaman Laporan VIP (Soal 3)
     Route::get('/laporan', [TransaksiController::class, 'laporan']);
+
+    // 5. Form Edit Data
+    Route::get('/transaksi/{id}/edit', [TransaksiController::class, 'edit']);
+
+    // 6. Simpan Perubahan (Update)
+    Route::put('/transaksi/{id}', [TransaksiController::class, 'update']);
+
+    // 7. Hapus Data
+    Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);
 });

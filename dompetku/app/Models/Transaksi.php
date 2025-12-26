@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaksi extends Model
 {
-    protected $fillable = ['keterangan', 'nominal', 'jenis', 'tanggal'];
+    // Tambahkan 'kategori_id' ke dalam array fillable
+    protected $fillable = ['keterangan', 'nominal', 'jenis', 'tanggal', 'kategori_id'];
 
+    // Tambahkan fungsi relasi ini
+    public function kategori()
+    {
+        return $this->belongsTo(Kategori::class);
+    }
 }

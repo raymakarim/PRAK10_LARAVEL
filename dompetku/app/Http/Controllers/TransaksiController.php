@@ -7,22 +7,31 @@ use App\Models\Transaksi; // Tambahkan ini
 
 class TransaksiController extends Controller
 {
-    public function index()
-    {
-        // Ambil data asli dari Database (Bukan array statis lagi)
-        $transaksi = Transaksi::all();
-        
-        $totalPemasukan = Transaksi::where('jenis', 'pemasukan')->sum('nominal');
-        $totalPengeluaran = Transaksi::where('jenis', 'pengeluaran')->sum('nominal');
-        $saldo = $totalPemasukan - $totalPengeluaran;
+public function index(Request $request) // Tambahkan parameter Request
+{
+    // Logika Pencarian (Soal 2: Search Bar)
+    $query = Transaksi::query();
 
-        return view('transaksi.index', [
-            'dataTransaksi' => $transaksi,
-            'saldo' => $saldo,
-            'pemasukan' => $totalPemasukan,
-            'pengeluaran' => $totalPengeluaran
-        ]);
+    if ($request->has('search') && $request->search != '') {
+        $query->where('keterangan', 'like', '%' . $request->search . '%');
     }
+
+    // Logika Pagination (Soal 2: Pagination)
+    // Ganti Transaksi::all() menjadi paginate(10)
+   $transaksi = $query->with('kategori')->paginate(10); 
+    
+    // Perhitungan saldo tetap menggunakan semua data di DB agar akurat
+    $totalPemasukan = Transaksi::where('jenis', 'pemasukan')->sum('nominal');
+    $totalPengeluaran = Transaksi::where('jenis', 'pengeluaran')->sum('nominal');
+    $saldo = $totalPemasukan - $totalPengeluaran;
+
+    return view('transaksi.index', [
+        'dataTransaksi' => $transaksi,
+        'saldo' => $saldo,
+        'pemasukan' => $totalPemasukan,
+        'pengeluaran' => $totalPengeluaran
+    ]);
+}
 
     public function create()
     {
@@ -87,4 +96,34 @@ public function loginProcess(Request $request)
         // Kirim ke view
         return view('transaksi.laporan', compact('pemasukan', 'pengeluaran', 'tabungan'));
     }
+
+
+    public function edit($id)
+{
+    // Mengambil data lama berdasarkan ID
+    $transaksi = Transaksi::findOrFail($id);
+    return view('transaksi.edit', compact('transaksi'));
+}
+
+public function update(Request $request, $id)
+{
+    // Validasi data (opsional tapi disarankan)
+    $request->validate([
+        'keterangan' => 'required',
+        'nominal' => 'required|numeric',
+    ]);
+
+    $transaksi = Transaksi::findOrFail($id);
+    $transaksi->update($request->all());
+
+    return redirect('/')->with('success', 'Data berhasil diperbarui!');
+}
+
+public function destroy($id)
+{
+    $transaksi = Transaksi::findOrFail($id);
+    $transaksi->delete();
+
+    return redirect('/')->with('success', 'Data berhasil dihapus!');
+}
 } // Ini kurung kurawal penutup class
